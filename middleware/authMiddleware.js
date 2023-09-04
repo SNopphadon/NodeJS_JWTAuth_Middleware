@@ -1,0 +1,35 @@
+const sql = require('mssql');
+const config = require('../Config/dbConfig');
+
+module.exports = (req, res, next) => {
+    if (!req.session.userId) {
+        // User not logged in, redirect to the login page or take appropriate action
+        return res.redirect('/login');
+    }
+
+    // Connect to the SQL Server database
+    sql.connect(config)
+        .then((pool) => {
+            return pool
+                .request()
+                .input('userId', sql.Int, req.session.userId)
+                .query('SELECT * FROM tb_account WHERE id = @userId');
+        })
+        .then((result) => {
+            const user = result.recordset[0];
+
+            if (!user) {
+                // User not found, redirect to the login page or take appropriate action
+                return res.redirect('/login');
+            }
+            
+            // User is logged in successfully, continue to the protected routes
+            console.log('User logged in successfully');
+            next();
+        })
+        .catch((error) => {
+            console.error(error);
+            // Handle any errors here, e.g., redirect to an error page or send an error response
+            res.status(500).send('Server Error');
+        });
+};

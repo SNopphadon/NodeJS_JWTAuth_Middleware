@@ -1,0 +1,1 @@
+npm i express nodemon express-session mssql ejs connect-flsh bcrypt jsonwebtoken
